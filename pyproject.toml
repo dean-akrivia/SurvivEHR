@@ -1,0 +1,89 @@
+[project]
+name = "SurvivEHR"
+dynamic = ["version"]
+description = "A competing-risks, time-to-event foundation model for electronic health records"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = "==3.10.*"
+# Pins mirror requirements.txt. FastEHR is deliberately not a dependency: the model code in src/
+# does not import it, only the examples/ wrappers do, so clone it and put it on PYTHONPATH to run those.
+dependencies = [
+    "torch==2.0.1",
+    "pytorch-lightning==2.1.0",
+    "transformers==4.24.0",
+    "pycox",
+    "polars==0.17.12",
+    "pandas>=1.4.2",
+    "pyarrow==8.0.0",
+    "sklearn-pandas==2.2.0",
+    "scikit-learn>=1.2.0",
+    "numpy==1.22.3",
+    "tdigest==0.5.2.2",
+    "hydra-core==1.3.2",
+    "wandb==0.13.6",
+    "seaborn==0.12.1",
+    "matplotlib<3.6",
+    "umap-learn==0.5.3",
+    "numba>=0.57",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.4.8,<0.5",
+]
+
+[tool.uv]
+package = true
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+fallback-version = "0.0.0"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+# The code imports itself as `SurvivEHR.src...` / `SurvivEHR.examples...`, so the repo root is the
+# package. `sources` remaps the root to `SurvivEHR/` inside the wheel.
+[tool.hatch.build.targets.wheel]
+include = [
+    "/__init__.py",
+    "/src/**/*.py",
+    "/examples/**/*.py",
+    "/examples/**/*.yaml",
+]
+exclude = ["**/notebooks", "**/outputs", "**/lightning_logs"]
+# Hatchling can't do editable installs with a prefix-adding `sources` rewrite, so the editable
+# .pth points at the parent directory instead. This requires the checkout to be named `SurvivEHR`.
+dev-mode-dirs = [".."]
+
+[tool.hatch.build.targets.wheel.sources]
+"" = "SurvivEHR"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/__init__.py",
+    "/src/**/*.py",
+    "/examples/**/*.py",
+    "/examples/**/*.yaml",
+    "/README.md",
+    "/LICENSE",
+    "/requirements.txt",
+]
+exclude = ["**/notebooks", "**/outputs", "**/lightning_logs"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140
+extend-exclude = ["*.ipynb", "**/outputs", "**/lightning_logs"]
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+# Bug-catching rules only (pyflakes + pycodestyle errors), so upstream code isn't flagged for style.
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
