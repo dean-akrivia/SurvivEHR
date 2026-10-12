@@ -24,8 +24,8 @@ import pandas as pd
 from contextlib import redirect_stdout
 import argparse
 
-from SurvivEHR.src.modules.head_layers.survival.desurv import ODESurvSingle
-from SurvivEHR.examples.modelling.SurvivEHR.run_experiment import run
+from survivehr.modules.head_layers.survival.desurv import ODESurvSingle
+from survivehr.experiments.run_experiment import run
 from FastEHR.dataloader.foundational_loader import FoundationalDataModule
 
 def make_dataset(datamodule, target_tokens, vocab_size, split='train', n=None):
@@ -90,7 +90,7 @@ def make_dataset(datamodule, target_tokens, vocab_size, split='train', n=None):
 def run(experiment, sample_size, seed):
     
     # load the configuration file, override any settings 
-    with initialize(version_base=None, config_path="../../modelling/SurvivEHR/confs", job_name="testing_notebook"):
+    with initialize(version_base=None, config_path="../../../src/survivehr/experiments/confs", job_name="testing_notebook"):
         cfg = compose(config_name="config_CompetingRisk11M") 
         cfg.transformer.block_size=1000000     # Ensure all records get included
 

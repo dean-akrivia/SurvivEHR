@@ -23,9 +23,18 @@ First, clone the SurvivEHR repository:
 
 ```bash
 git clone https://github.com/cwlgadd/SurvivEHR.git
-mv SurvivEHR CPRD 
-cd CPRD
+cd SurvivEHR
 ```
+
+## Package layout
+
+The library is the `survivehr` package under `src/survivehr/`:
+
+- `survivehr.models` and `survivehr.modules`: the model, survival heads and building blocks.
+- `survivehr.experiments`: the Lightning wrappers, optimisers, callbacks and Hydra configs (`confs/`) used to run experiments. `run_experiment.run(cfg)` is the entry point.
+- `survivehr.data`: study criteria and event-name maps used when building fine-tuning datasets.
+
+Install it into your environment with `uv sync` (editable, from this repo) or as a wheel built with `uv build`, then `import survivehr`. `survivehr.experiments` also needs FastEHR (see below). The Hydra configs can be loaded from an installed package with `hydra.initialize_config_module(config_module="survivehr.experiments.confs")`.
 
 ## Option 1: Create a virtual environment
 
@@ -119,9 +128,11 @@ The repository includes an examples/ directory containing scripts and Jupyter no
     - **3_benchmark_data/**: Convert supervised FastEHR datasets for cross-sectional benchmarks (e.g. DeepHit, DeSurv, Random Survival Forest)
     - **4_convert_BEHRT_data/**: Convert self-supervised and supervised FastEHR datasets for time series benchmarks using FastEHR's adapter framework (e.g. BEHRT)
 - **SurvivEHR Examples (examples/modelling/)**: This folder contains scripts and notebooks for running SurvivEHR's experiments
-    - **/**: The root directory contains wrapper scripts for the models given in `src/models/`.
-        - `run_experiment.py` wraps all experiments and calls: `setup_causal_experiment.py` for pre-training; `set_fewshot_experiment.py` for supervised cases which do use the pre-training architecture, such as zero-shot experiments; and `setup_finetune_experiment.py` for supervised experiments which replace the pre-training head.
-    - **notebooks**: Each folder in the notebooks contains the various experiments presented throughout the accompanying manuscript.
+    - The experiment wrappers live in the package, in `src/survivehr/experiments/`. `run_experiment.py` wraps all experiments and calls: `setup_causal_experiment.py` for pre-training; `setup_fewshot_experiment.py` for supervised cases which do use the pre-training architecture, such as zero-shot experiments; and `setup_finetune_experiment.py` for supervised experiments which replace the pre-training head. Run it with `python -m survivehr.experiments.run_experiment --config-name=config_CompetingRisk11M`.
+    - **SurvivEHR/notebooks**: Each folder in the notebooks contains the various experiments presented throughout the accompanying manuscript.
+    - **benchmarks**: DeepHit, DeSurv, Random Survival Forest and MLP baselines.
+
+The scripts and notebooks in `examples/` are not part of the package. They import `survivehr` and, for the benchmarks, `examples.modelling.benchmarks...`, so run them with the repository root and FastEHR on `PYTHONPATH`.
       
 
 

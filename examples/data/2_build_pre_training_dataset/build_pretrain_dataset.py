@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # load the configuration file, override any settings 
     with initialize(version_base=None, 
-                    config_path="../../modelling/SurvivEHR/confs", 
+                    config_path="../../../src/survivehr/experiments/confs", 
                     job_name="pretrain_dataset_creation_job"
                    ):
         cfg = compose(config_name="config_CompetingRisk11M")

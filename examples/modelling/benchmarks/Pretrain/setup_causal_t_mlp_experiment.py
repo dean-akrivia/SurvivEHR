@@ -6,9 +6,9 @@ import logging
 import numpy as np
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau, CosineAnnealingLR, LambdaLR, SequentialLR, ChainedScheduler
 
-from SurvivEHR.examples.modelling.SurvivEHR.helpers import is_interactive
-from SurvivEHR.src.models.survival.custom_callbacks.causal_eval import PerformanceMetrics
-from SurvivEHR.src.models.TTE.base import TTETransformer
+from survivehr.experiments.helpers import is_interactive
+from survivehr.models.survival.custom_callbacks.causal_eval import PerformanceMetrics
+from survivehr.models.TTE.base import TTETransformer
 
 
 class CausalTMLPExperiment(pl.LightningModule):

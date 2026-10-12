@@ -4,7 +4,7 @@ from omegaconf import OmegaConf
 import logging
 import time
 
-from SurvivEHR.examples.data.study_criteria import t2d_inclusion_method
+from survivehr.data.study_criteria import t2d_inclusion_method
 from FastEHR.dataloader.foundational_loader import FoundationalDataModule
 
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     # load the configuration file, override any settings 
     with initialize(version_base=None, 
-                    config_path="../../../../modelling/SurvivEHR/confs", 
+                    config_path="../../../../../src/survivehr/experiments/confs", 
                     job_name="dataset_creation_hypertension_job"):
         cfg = compose(config_name="config_CompetingRisk11M", overrides=[])
         

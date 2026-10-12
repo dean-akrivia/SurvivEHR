@@ -6,7 +6,7 @@ import torch
 import wandb
 from hydra import compose, initialize
 
-from SurvivEHR.examples.modelling.SurvivEHR.run_experiment import run
+from survivehr.experiments.run_experiment import run
 
 
 def record_results(summary, task, pre_trained_model, seed, recorded_metrics):
@@ -48,7 +48,7 @@ def run_job(pre_trained_model, seed, sweep, record_metrics=None):
 
     
     # load the configuration file, override any settings 
-    with initialize(version_base=None, config_path="../../../confs", job_name="testing_notebook"):
+    with initialize(version_base=None, config_path="../../../../../../src/survivehr/experiments/confs", job_name="testing_notebook"):
         cfg = compose(config_name="config_CompetingRisk11M", 
                       overrides=[# Experiment setup
                                  "experiment.type='fine-tune-cr'",

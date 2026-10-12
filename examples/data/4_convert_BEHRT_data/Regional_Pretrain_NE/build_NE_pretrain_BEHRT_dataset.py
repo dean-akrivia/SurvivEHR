@@ -21,7 +21,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}.")
 
     # load the configuration file, override any settings 
-    with initialize(version_base=None, config_path="../../../modelling/SurvivEHR/confs", job_name="dataset_creation_notebook"):
+    with initialize(version_base=None, config_path="../../../../src/survivehr/experiments/confs", job_name="dataset_creation_notebook"):
         cfg = compose(config_name="config_CompetingRisk11M", overrides=[])
     
     # Create new dataset 

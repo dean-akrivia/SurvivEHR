@@ -12,27 +12,26 @@ No model weights and no data are in the repo. Every config and job script points
 
 - Python 3.10 (code uses `match` statements). `pyproject.toml` + `uv.lock` are the uv project (`make sync`, `make lock`, `make build`, `make lint`, `make format`; `make help` lists them). `requirements.txt` / `requirements.lock` are the older pip-style pins still used by `containers/` and the HPC job scripts; direct pins in `pyproject.toml` mirror `requirements.txt`, so change both together. `make publish` uploads a tagged release to the index in `UV_PUBLISH_URL`, read from a git-ignored `.env` (template: `.env.example`); keep internal URLs out of tracked files, since the repo is public. Old stack: `torch==2.0.1`, `pytorch-lightning==2.1.0`, `polars==0.17.12`, `hydra-core==1.3.2`, `wandb==0.13.6`. Don't write code that assumes newer APIs (especially polars).
 - **FastEHR** (`https://github.com/cwlgadd/FastEHR`) is a required sibling dependency not listed in `requirements.txt`. It provides `FoundationalDataModule`, the tokeniser, the database builder and the BEHRT adapters. Clone it next to this repo and put it on `PYTHONPATH`.
-- **Imports are package-rooted at `SurvivEHR.`** (`from SurvivEHR.src.models...`, `from SurvivEHR.examples.modelling...`). The repo directory must be named `SurvivEHR` and its *parent* must be on `PYTHONPATH`; the top-level `__init__.py` exists for this. The package was renamed from `CPRD` in `ece8753` — the README's `mv SurvivEHR CPRD` step and a few strings (e.g. `_target_="CPRD.examples..."` in `notebooks/CompetingRisk/3_Regional_analaysis/regional_run.py`, `src/README.md`) are stale.
+- **The import package is `survivehr`, in `src/survivehr/`** (src layout): `survivehr.models`, `survivehr.modules`, `survivehr.experiments` (Lightning wiring, optimisers, callbacks, Hydra `confs/`) and `survivehr.data` (`study_criteria`, `map_to_reduced_names`). Every package directory has an `__init__.py`, including `confs/` so `hydra.initialize_config_module("survivehr.experiments.confs")` works from an installed wheel. `examples/` is not packaged: scripts there import `survivehr`, and the benchmarks import `examples.modelling.benchmarks...`, so run them with the repo root on `PYTHONPATH`. Hydra `config_path`s in `examples/` are relative paths to `src/survivehr/experiments/confs`. Upstream's old roots (`SurvivEHR.src`, `SurvivEHR.examples`, earlier `CPRD`) are gone; a few stale `CPRD.` strings remain (e.g. `_target_="CPRD.examples..."` in `notebooks/CompetingRisk/3_Regional_analaysis/regional_run.py`), as do the `/rds/.../Projects/CPRD/...` paths in the Slurm scripts.
 - Apptainer route (HPC): `containers/env.paths.sh` holds all paths; `bash containers/container_build.sh`, `bash containers/env_bootstrap.sh`, then `bash containers/run_in_container.sh python ...` (adds `--nv` automatically when Slurm/CUDA GPUs are visible).
 
-- Packaging: hatchling remaps the repo root to `SurvivEHR/` in the wheel (`sources`), and ships only `*.py` and `*.yaml` from `src/` and `examples/` (notebooks and artefacts excluded). Editable installs (`uv sync`) put the *parent* directory on `sys.path` via `dev-mode-dirs = [".."]`, because hatchling can't do editable installs with a prefix-adding rewrite.
+- Packaging: hatchling ships `src/survivehr` (`packages`); the sdist adds README, LICENSE and `requirements.txt`. `survivehr.experiments.run_experiment` imports FastEHR, which is not a declared dependency.
 - `make lint` is check-only bug rules (`E4`, `E7`, `E9`, `F`) and currently reports ~255 existing upstream issues. `make format` would rewrite the whole upstream codebase; don't run it without asking.
 
 There is no test suite or CI.
 
 ## Running experiments
 
-Everything goes through the Hydra entry point `examples/modelling/SurvivEHR/run_experiment.py`. Its decorator names `config_name="default"`, which doesn't exist, so always pass `--config-name`:
+Everything goes through the Hydra entry point `src/survivehr/experiments/run_experiment.py`. Its decorator names `config_name="default"`, which doesn't exist, so always pass `--config-name`:
 
 ```bash
-cd examples/modelling/SurvivEHR
-python run_experiment.py --config-name=config_CompetingRisk11M            # or config_SingleRisk
-python run_experiment.py --config-name=config_CompetingRisk11M \
+python -m survivehr.experiments.run_experiment --config-name=config_CompetingRisk11M            # or config_SingleRisk
+python -m survivehr.experiments.run_experiment --config-name=config_CompetingRisk11M \
     experiment.type=fine-tune-cr experiment.fine_tune_id=FineTune_CVD \
     data.path_to_ds=/path/to/FineTune_CVD/ fine_tuning.fine_tune_outcomes=[...]
 ```
 
-Notebook sweeps (`notebooks/**/ablation_run.py`, `regional_run.py`) instead use `hydra.initialize/compose` with overrides and call `run(cfg)` directly. Slurm wrappers are the `*_job.sh` files alongside them.
+Notebook sweeps (`notebooks/**/ablation_run.py`, `regional_run.py`) instead use `hydra.initialize/compose` with overrides and call `run(cfg)` directly. Slurm wrappers are the `*_job.sh` files alongside them; they still `cd` into the old upstream `/rds` checkout and run `python run_experiment.py`.
 
 `experiment.type` (normalised by stripping `-`/spaces and lowercasing) selects the path in `run()`:
 
@@ -43,7 +42,7 @@ Notebook sweeps (`notebooks/**/ablation_run.py`, `regional_run.py`) instead use 
 | `few-shot` | `setup_fewshot_experiment` | supervised training keeping the pre-training head |
 | `fine-tune` / `fine-tune-cr` / `fine-tune-sr` | `setup_finetune_experiment` | replace head with a new CR (default) or SR survival head |
 
-The data module is loaded in supervised form when `fine_tuning.fine_tune_outcomes` or `fine_tuning.custom_outcome_method._target_` is set. Custom outcome and stratification methods are given as dotted `_target_` strings and resolved with `importlib` (see `helpers.custom_mm_outcomes`, `examples/data/study_criteria.py`).
+The data module is loaded in supervised form when `fine_tuning.fine_tune_outcomes` or `fine_tuning.custom_outcome_method._target_` is set. Custom outcome and stratification methods are given as dotted `_target_` strings and resolved with `importlib` (see `survivehr.experiments.helpers.custom_mm_outcomes`, `survivehr.data.study_criteria`).
 
 **Checkpoint resolution is implicit and path-based**: pre-trained = `{ckpt_dir}{run_id}.ckpt`, supervised = `{ckpt_dir}{run_id}_{fine_tune_id}.ckpt`. If the supervised checkpoint exists it is loaded for evaluation (and `train` must be False); else if the pre-trained one exists it initialises from it; else it trains from scratch. Continuing pre-training writes to a `-v1` checkpoint. After `trainer.fit` the best checkpoint is reloaded before `trainer.test`. Logging is W&B (`WandbLogger`).
 
@@ -51,13 +50,13 @@ The data module is loaded in supervised form when `fine_tuning.fine_tune_outcome
 
 ## Architecture
 
-Library code is in `src/`; experiment wiring (Lightning modules, optimisers, schedulers, callbacks) is in `examples/modelling/SurvivEHR/`.
+Library code is in `src/survivehr/`; experiment wiring (Lightning modules, optimisers, schedulers, callbacks) is in `src/survivehr/experiments/`. Paths below are relative to `src/survivehr/`.
 
-- **Backbone** — `src/models/TTE/base.py::TTETransformer`. `DataEmbeddingLayer` (`src/modules/data_embeddings/`) embeds each event from token + optional value + static covariates; `TemporalPositionalEncoding` encodes event *time*, not sequence index. Blocks are Neo (`global`/`local` attention) or Nano GPT variants, chosen by `transformer.block_type`. `private_heads` reserves some attention-head dimensions for the value head only.
-- **Pre-training model** — `src/models/survival/task_heads/causal.py::SurvStreamGPTForCausalModelling`. Survival head from `head.SurvLayer`: `cr` → `ODESurvCompetingRiskLayer` (next event as competing risks over the whole vocabulary, the paper's core idea); `sr` → `CausalODESurvSingleRiskLayer` (one-vs-all). Both are DeSurv-style ODE survival layers built on `src/modules/head_layers/survival/desurv.py`. Plus `GaussianRegressionLayer` for measurement values. Loss is `surv_weight`/`value_weight`, normalised to sum to 1.
+- **Backbone** — `models/TTE/base.py::TTETransformer`. `DataEmbeddingLayer` (`modules/data_embeddings/`) embeds each event from token + optional value + static covariates; `TemporalPositionalEncoding` encodes event *time*, not sequence index. Blocks are Neo (`global`/`local` attention) or Nano GPT variants, chosen by `transformer.block_type`. `private_heads` reserves some attention-head dimensions for the value head only.
+- **Pre-training model** — `models/survival/task_heads/causal.py::SurvStreamGPTForCausalModelling`. Survival head from `head.SurvLayer`: `cr` → `ODESurvCompetingRiskLayer` (next event as competing risks over the whole vocabulary, the paper's core idea); `sr` → `CausalODESurvSingleRiskLayer` (one-vs-all). Both are DeSurv-style ODE survival layers built on `modules/head_layers/survival/desurv.py`. Plus `GaussianRegressionLayer` for measurement values. Loss is `surv_weight`/`value_weight`, normalised to sum to 1.
 - **Lightning wrappers** — `CausalExperiment`, `FewShotExperiment`, `FineTuneExperiment` in `setup_*_experiment.py`. Fine-tuning supports PEFT (`fix`/`adapter`), layer-wise LR decay, linear probing then top-k unfreezing, and an optional compression layer (`fine_tuning.*` config; optimiser groups in `optimizers_fine_tuning.py`). The custom `DecayCAWarmRestarts` scheduler lives in `setup_causal_experiment.py`.
-- **Callbacks** — `src/models/base_callback.py` (UMAP hidden-embedding plots) and `src/models/survival/custom_callbacks/` (causal eval metrics, clinical-prediction metrics such as C-td/IBS/INBLL, RMST).
-- **Legacy** — `src/models/transformer/` (plain GPT with `causal_lm` head) imports `SurvivEHR.src.modules.block`, which no longer exists. `src/models/TTE/task_heads/` are also earlier variants. The live path is `TTE/base.py` + `survival/task_heads/causal.py`.
+- **Callbacks** — `models/base_callback.py` (UMAP hidden-embedding plots) and `models/survival/custom_callbacks/` (causal eval metrics, clinical-prediction metrics such as C-td/IBS/INBLL, RMST).
+- **Legacy** — `models/transformer/` (plain GPT with `causal_lm` head) imports `survivehr.modules.block`, which no longer exists. `models/TTE/task_heads/` are also earlier variants. The live path is `TTE/base.py` + `survival/task_heads/causal.py`.
 
 `examples/data/` is the numbered data pipeline built on FastEHR: 1 build the SQLite DB, 2 build the pre-training dataset (practice-level splits to avoid leakage, meta information for tokenisation and outlier bounds), 3 build fine-tuning datasets / cross-sectional benchmark data, 4 convert to BEHRT format. `examples/modelling/benchmarks/` holds DeepHit, DeSurv, RSF and MLP baselines.
 

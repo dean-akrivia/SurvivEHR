@@ -7,11 +7,11 @@ import logging
 from pathlib import Path
 
 from FastEHR.dataloader.foundational_loader import FoundationalDataModule
-from SurvivEHR.examples.modelling.benchmarks.Pretrain.setup_causal_t_mlp_experiment import CausalTMLPExperiment, setup_t_mlp_experiment
-from SurvivEHR.examples.modelling.benchmarks.Pretrain.setup_causal_mlp_experiment import CausalMLPExperiment, setup_mlp_experiment
+from examples.modelling.benchmarks.Pretrain.setup_causal_t_mlp_experiment import CausalTMLPExperiment, setup_t_mlp_experiment
+from examples.modelling.benchmarks.Pretrain.setup_causal_mlp_experiment import CausalMLPExperiment, setup_mlp_experiment
 
 
-@hydra.main(version_base=None, config_path="../../SurvivEHR/confs", config_name="default")
+@hydra.main(version_base=None, config_path="../../../../src/survivehr/experiments/confs", config_name="default")
 def run(cfg : DictConfig):
     logging.info(f"Running {cfg.head.SurvLayer} on {os.cpu_count()} CPUs and {torch.cuda.device_count()} GPUs")
 

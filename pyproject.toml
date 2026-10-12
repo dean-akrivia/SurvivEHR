@@ -6,8 +6,9 @@ readme = "README.md"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = "==3.10.*"
-# Pins mirror requirements.txt. FastEHR is deliberately not a dependency: the model code in src/
-# does not import it, only the examples/ wrappers do, so clone it and put it on PYTHONPATH to run those.
+# Pins mirror requirements.txt. FastEHR is deliberately not a dependency: survivehr.models and
+# survivehr.modules do not import it. survivehr.experiments and the examples/ scripts do, so clone it
+# and put it on PYTHONPATH to use those.
 dependencies = [
     "torch==2.0.1",
     "pytorch-lightning==2.1.0",
@@ -43,34 +44,16 @@ fallback-version = "0.0.0"
 [tool.hatch.version]
 source = "uv-dynamic-versioning"
 
-# The code imports itself as `SurvivEHR.src...` / `SurvivEHR.examples...`, so the repo root is the
-# package. `sources` remaps the root to `SurvivEHR/` inside the wheel.
 [tool.hatch.build.targets.wheel]
-include = [
-    "/__init__.py",
-    "/src/**/*.py",
-    "/examples/**/*.py",
-    "/examples/**/*.yaml",
-]
-exclude = ["**/notebooks", "**/outputs", "**/lightning_logs"]
-# Hatchling can't do editable installs with a prefix-adding `sources` rewrite, so the editable
-# .pth points at the parent directory instead. This requires the checkout to be named `SurvivEHR`.
-dev-mode-dirs = [".."]
-
-[tool.hatch.build.targets.wheel.sources]
-"" = "SurvivEHR"
+packages = ["src/survivehr"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/__init__.py",
-    "/src/**/*.py",
-    "/examples/**/*.py",
-    "/examples/**/*.yaml",
+    "/src/survivehr",
     "/README.md",
     "/LICENSE",
     "/requirements.txt",
 ]
-exclude = ["**/notebooks", "**/outputs", "**/lightning_logs"]
 
 [tool.ruff]
 target-version = "py310"
