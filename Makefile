@@ -1,4 +1,9 @@
-.PHONY: help sync lock lint format clean build
+# Local, untracked settings (e.g. the publish index). See .env.example.
+# Only the variables defined in .env are exported to recipes.
+-include .env
+export $(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' .env 2>/dev/null)
+
+.PHONY: help sync lock lint format clean build publish
 
 help: ## Show available commands
 	@echo "Available commands:"
@@ -23,3 +28,9 @@ clean: ## Remove build artifacts
 
 build: ## Build the sdist and wheel
 	@ uv build
+
+publish: ## Publish a tagged release to the index set by UV_PUBLISH_URL (see .env.example)
+	@ test -n "$(UV_PUBLISH_URL)" || { echo "UV_PUBLISH_URL is not set; copy .env.example to .env and fill it in"; exit 1; }
+	@ git describe --exact-match --tags HEAD >/dev/null 2>&1 || { echo "HEAD is not tagged; tag a release (e.g. v0.1.0) before publishing"; exit 1; }
+	@ $(MAKE) clean build
+	@ uv publish
