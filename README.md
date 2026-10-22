@@ -38,7 +38,7 @@ Install it into your environment with `uv sync` (editable, from this repo) or as
 
 ## Option 1: Create a virtual environment
 
-Requirements for this project can be found in `requirements.txt`. 
+Dependencies are declared in `pyproject.toml` and locked in `uv.lock`. 
 
 Setting up the virtual environment can be done in many ways. For example, this can be done using ![Astral's UV packaging tools](https://docs.astral.sh/uv/):
 
@@ -68,10 +68,10 @@ export UV_HTTP_TIMEOUT=180
 
 ```
 
-You can then build the venv using the provided, generated, requirements.lock file
+You can then install the locked dependencies and SurvivEHR itself (editable) into the active venv
 
 ```bash
-uv pip sync /path/to/project/root/requirements.lock
+uv sync --active
 ```
 
 To activate the environment use

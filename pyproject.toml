@@ -6,14 +6,14 @@ readme = "README.md"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = "==3.10.*"
-# Pins mirror requirements.txt. FastEHR is deliberately not a dependency: survivehr.models and
+# FastEHR is deliberately not a dependency: survivehr.models and
 # survivehr.modules do not import it. survivehr.experiments and the examples/ scripts do, so clone it
 # and put it on PYTHONPATH to use those.
 dependencies = [
     "torch==2.0.1",
     "pytorch-lightning==2.1.0",
     "transformers==4.24.0",
-    "pycox",
+    "pycox==0.3.0",
     "polars==0.17.12",
     "pandas>=1.4.2",
     "pyarrow==8.0.0",
@@ -52,7 +52,6 @@ include = [
     "/src/survivehr",
     "/README.md",
     "/LICENSE",
-    "/requirements.txt",
 ]
 
 [tool.ruff]

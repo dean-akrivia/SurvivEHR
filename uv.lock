@@ -1407,7 +1407,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=1.4.2" },
     { name = "polars", specifier = "==0.17.12" },
     { name = "pyarrow", specifier = "==8.0.0" },
-    { name = "pycox" },
+    { name = "pycox", specifier = "==0.3.0" },
     { name = "pytorch-lightning", specifier = "==2.1.0" },
     { name = "scikit-learn", specifier = ">=1.2.0" },
     { name = "seaborn", specifier = "==0.12.1" },

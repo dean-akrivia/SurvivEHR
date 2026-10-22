@@ -49,12 +49,12 @@ fi
 # Make sure basic build tooling is modern inside the venv
 "$VENV_PATH/bin/python" -m pip install --upgrade pip setuptools wheel
 
-# Install project requirements (exactly what you listed)
-echo "[container] Installing requirements from requirements.txt"
+# Install the project (editable) and its pinned dependencies from pyproject.toml
+echo "[container] Installing project from pyproject.toml"
 export UV_CACHE_DIR="$UV_CACHE_DIR"
 export TMPDIR="$TMPDIR"
 # Use pip to avoid activation; uv not required for install here
-"$VENV_PATH/bin/pip" install -r requirements.txt
+"$VENV_PATH/bin/pip" install -e .
 
 # Report
 echo "[container] Python: $("$VENV_PATH/bin/python" -V)"
