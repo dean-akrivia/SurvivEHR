@@ -18,7 +18,7 @@ source "$VENV_PATH/bin/activate"
 
 # 3) Install your requirements (no --user, inside the venv)
 #    (uv pip is drop-in compatible; it’s much faster, but pip works too)
-uv pip install --upgrade pip
+uv pip install --upgrade "pip>=26.2.2"
 uv pip install -e "$(git rev-parse --show-toplevel)"
 
 # Optional: dev tools

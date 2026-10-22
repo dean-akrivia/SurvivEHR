@@ -47,7 +47,7 @@ if ! "$VENV_PATH/bin/python" -m pip --version >/dev/null 2>&1; then
 fi
 
 # Make sure basic build tooling is modern inside the venv
-"$VENV_PATH/bin/python" -m pip install --upgrade pip setuptools wheel
+"$VENV_PATH/bin/python" -m pip install --upgrade "pip>=26.2.2" setuptools wheel
 
 # Install the project (editable) and its pinned dependencies from pyproject.toml
 echo "[container] Installing project from pyproject.toml"
