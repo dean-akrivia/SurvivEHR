@@ -14,7 +14,8 @@ From: python:3.10.4-slim
     apt-get update
     apt-get install -y --no-install-recommends curl ca-certificates build-essential git
     rm -rf /var/lib/apt/lists/*
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    pip install --no-cache-dir --upgrade pip==26.2.2
+    curl -LsSf https://astral.sh/uv/0.13.5/install.sh | sh
 
 %help
     Minimal image with Python 3.10.4 + uv. Venvs & caches live on host (/rds).
