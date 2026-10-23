@@ -12,6 +12,8 @@ requires-python = "==3.10.*"
 dependencies = [
     "torch==2.0.1",
     "pytorch-lightning==2.1.0",
+    # lightning_fabric 2.1.0 imports pkg_resources, which setuptools removed in 82.0.0.
+    "setuptools<82",
     "transformers==4.24.0",
     "pycox==0.3.0",
     "polars==0.17.12",
