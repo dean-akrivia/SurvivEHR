@@ -23,8 +23,9 @@ class DataEmbeddingLayer(torch.nn.Module):
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
 
-        # 
-        self.static_proj = nn.Linear(16, self.embed_dim)
+        # Input width (number of static covariates after one-hot encoding) is data-dependent,
+        # e.g. 16 for the CPRD pre-training dataset; inferred from the first batch.
+        self.static_proj = nn.LazyLinear(self.embed_dim)
 
         
         # self.dynamic_embedding_layer = JointDynamicEmbeddingLayer(vocab_size=vocab_size,
