@@ -34,7 +34,7 @@ The library is the `survivehr` package under `src/survivehr/`:
 - `survivehr.experiments`: the Lightning wrappers, optimisers, callbacks and Hydra configs (`confs/`) used to run experiments. `run_experiment.run(cfg)` is the entry point.
 - `survivehr.data`: study criteria and event-name maps used when building fine-tuning datasets.
 
-Install it into your environment with `uv sync --extra experiments` (editable, from this repo, with the pinned experiment stack) or as a wheel built with `uv build`, then `import survivehr`. The wheel's own requirements are only the six packages the model classes load, as ranges; `pip install "survivehr[experiments]"` adds the pinned experiment stack. `survivehr.experiments` also needs FastEHR (see below). The Hydra configs can be loaded from an installed package with `hydra.initialize_config_module(config_module="survivehr.experiments.confs")`.
+Install it into your environment with `uv sync` (editable, from this repo) or as a wheel built with `uv build`, then `import survivehr`. `survivehr.experiments` also needs FastEHR (see below). The Hydra configs can be loaded from an installed package with `hydra.initialize_config_module(config_module="survivehr.experiments.confs")`.
 
 ## Option 1: Create a virtual environment
 
@@ -71,7 +71,7 @@ export UV_HTTP_TIMEOUT=180
 You can then install the locked dependencies and SurvivEHR itself (editable) into the active venv
 
 ```bash
-uv sync --active --extra experiments
+uv sync --active
 ```
 
 To activate the environment use

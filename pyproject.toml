@@ -12,9 +12,11 @@ requires-python = ">=3.10"
 #
 # These are the ranges the model classes need: the six third-party packages that the backbone, the
 # survival and value heads and the causal metrics callback load (checked by importing them and listing
-# what loads). The lower bounds are the versions the reference experiments were run with; uv.lock still
-# resolves to exactly those. Everything else, including the plotting and clinical-prediction callbacks
-# in survivehr.models (base_callback, *_clinical_prediction_model), needs the `experiments` extra.
+# what loads). The lower bounds are the versions the reference experiments were run with. The experiment
+# entry point, the notebooks and benchmarks, and the plotting and clinical-prediction callbacks in
+# survivehr.models (base_callback, *_clinical_prediction_model) need packages that are not declared here:
+# hydra-core, polars, pyarrow, pycox, scikit-learn, sklearn-pandas, tdigest, seaborn, matplotlib,
+# umap-learn and numba. Install them yourself to run those.
 dependencies = [
     "torch>=2.0.1",
     "pytorch-lightning>=2.1.0",
@@ -25,32 +27,6 @@ dependencies = [
     "wandb>=0.13.6",
 ]
 
-[project.optional-dependencies]
-# The environment the reference experiments run in, pinned exactly as before: the hydra entry point,
-# the notebooks and benchmarks, and the callbacks that need seaborn, umap, pycox and matplotlib. The
-# exact pins narrow the ranges above, so `pip install -e ".[experiments]"` (the Apptainer route) and
-# `uv sync --extra experiments` give the old environment. A plain install of the library does not need it.
-experiments = [
-    "torch==2.0.1",
-    "pytorch-lightning==2.1.0",
-    # lightning_fabric 2.1.0 imports pkg_resources, which setuptools removed in 82.0.0.
-    "setuptools<82",
-    "transformers==4.24.0",
-    "pycox==0.3.0",
-    "polars==0.17.12",
-    "pyarrow==8.0.0",
-    "sklearn-pandas==2.2.0",
-    "scikit-learn>=1.2.0",
-    "numpy==1.22.3",
-    "tdigest==0.5.2.2",
-    "hydra-core==1.3.2",
-    "wandb==0.13.6",
-    "seaborn==0.12.1",
-    "matplotlib<3.6",
-    "umap-learn==0.5.3",
-    "numba>=0.57",
-]
-
 [dependency-groups]
 dev = [
     "ruff>=0.4.8,<0.5",
@@ -58,10 +34,6 @@ dev = [
 
 [tool.uv]
 package = true
-# uv.lock is the reference environment, which only exists for Python 3.10 (torch 2.0.1 and numpy 1.22.3
-# have no newer wheels). Without this, `uv lock` resolves the open-ended requires-python for every newer
-# Python as well, which forks the lock and moves versions. The published wheel's metadata is unaffected.
-environments = ["python_full_version >= '3.10' and python_full_version < '3.11'"]
 
 [tool.uv-dynamic-versioning]
 vcs = "git"
