@@ -157,6 +157,7 @@ class GaussianRegressionLayer(torch.nn.Module):
             
             # initialise loss
             loss = 0
+            value_dist = None
             for token in self.measurement_tokens:
 
                 # create empty value dist - not all of these will be filled (such as when the target is a diagnosis)
