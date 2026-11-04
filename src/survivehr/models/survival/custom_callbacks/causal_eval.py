@@ -60,7 +60,8 @@ class PerformanceMetrics(Callback):
             if log_stratified_by_outcome:
                 metric_dict[f"{log_prefix}{log_name}_stratify_by_{observed_k}"] = event_concordance
 
-            self.log_dict(metric_dict)
+            # pytorch_lightning.Callback has no log_dict; log through the module under test, one transition at a time
+            self._pl_module.log_dict(metric_dict, batch_size=1)
             
         except IndexError as e:
             logging.warning("IndexError in concordance calculation: %s", str(e))
@@ -253,6 +254,9 @@ class PerformanceMetrics(Callback):
     ):
         """
         """
+
+        # Kept for _compute_and_log_concordance, which logs through the module
+        self._pl_module = pl_module
 
         # We run the callback on only the first sample within each batch as this is computationally heavy
         batch = {k: v[[0]] for k, v in batch.items()}          # Take first patient in the batch
